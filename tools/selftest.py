@@ -32,8 +32,18 @@ def data_url(path: Path) -> str:
     return "data:image/png;base64," + base64.b64encode(path.read_bytes()).decode("ascii")
 
 
+def load_demo_meta() -> list[dict]:
+    """优先本地真实示例；没有就退回仓库自带的合成示例。"""
+    for name in ("samples.json", "samples.demo.json"):
+        path = SAMPLES / name
+        if path.is_file():
+            return json.loads(path.read_text(encoding="utf-8"))
+    raise SystemExit("找不到示例清单：先跑 tools/make_demo.py 或 tools/make_samples.py")
+
+
 def main() -> int:
-    meta = json.loads((SAMPLES / "samples.json").read_text(encoding="utf-8"))
+    real_samples = (SAMPLES / "samples.json").is_file()
+    meta = load_demo_meta()
     service = CompareService()
     failures: list[str] = []
 
@@ -43,6 +53,7 @@ def main() -> int:
 
     for item in meta:
         pid = item["id"]
+        kind = item.get("expect") or pid
         payload = {
             "before": data_url(SAMPLES / item["before"]),
             "after": data_url(SAMPLES / item["after"]),
@@ -73,19 +84,22 @@ def main() -> int:
 
         # 像素差分：四个示例都应给出正确的“有无变化”
         px = by_key["pixel_diff"]
-        if px["hasChange"] != (pid != "none"):
+        if px["hasChange"] != (kind != "none"):
             failures.append(f"{pid}: 像素差分判定错误 hasChange={px['hasChange']}")
 
         # HSV：应给出具体的新增/消失/移位/无变化
         hsv = by_key["red_hsv"]
-        if hsv["changeType"] != EXPECTED[pid]:
-            failures.append(f"{pid}: HSV 类型 {hsv['changeType']} != {EXPECTED[pid]}")
+        if hsv["changeType"] != EXPECTED[kind]:
+            failures.append(f"{pid}: HSV 类型 {hsv['changeType']} != {EXPECTED[kind]}")
 
         # YOLO：红点变化应能被元素内像素差捕获；未配置权重时跳过（BYOM）
         yolo = by_key["yolo"]
         if yolo.get("details", {}).get("unavailable"):
             print("  └ YOLO 未配置权重（BYOM），跳过该方法的判定断言")
-        elif yolo["hasChange"] != (pid != "none"):
+        elif not real_samples:
+            # 合成假界面不是微信 UI，YOLO 框的位置与红点无关；只验结构，不验判定
+            print("  └ 合成示例：YOLO 不参与判定断言（换成本地真实示例时会校验）")
+        elif yolo["hasChange"] != (kind != "none"):
             failures.append(f"{pid}: YOLO 判定错误 hasChange={yolo['hasChange']}")
 
         # SSIM / OCR / 灰度指纹：全局或文本方法，本来就看不到小红点，应稳定报“无变化”
@@ -96,7 +110,7 @@ def main() -> int:
                 )
 
         # ORB 对齐：红点变化应保留为残差
-        if by_key["orb_align"]["hasChange"] != (pid != "none"):
+        if by_key["orb_align"]["hasChange"] != (kind != "none"):
             failures.append(
                 f"{pid}: ORB 判定错误 hasChange={by_key['orb_align']['hasChange']}"
             )
@@ -108,7 +122,8 @@ def main() -> int:
         print("-" * 96)
 
     # 额外验证 ORB 的看家本领：整张图平移 25px / 12px 后，应能对齐并判“无内容变化”
-    base_path = SAMPLES / "none-before.png"
+    none_item = next((it for it in meta if it.get("expect") == "none"), meta[-1])
+    base_path = SAMPLES / none_item["before"]
     base = cv2.imdecode(np.fromfile(str(base_path), dtype=np.uint8), cv2.IMREAD_COLOR)
     h, w = base.shape[:2]
     shifted = cv2.warpAffine(

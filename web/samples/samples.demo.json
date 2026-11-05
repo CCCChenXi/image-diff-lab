@@ -1,0 +1,34 @@
+[
+ {
+  "id": "demo-added",
+  "label": "合成 · 红点新增",
+  "note": "第二张图在第一个会话上多了一个红点。",
+  "expect": "added",
+  "before": "demo-added-before.png",
+  "after": "demo-added-after.png"
+ },
+ {
+  "id": "demo-removed",
+  "label": "合成 · 红点消失",
+  "note": "第一张图有红点，第二张图红点消失。",
+  "expect": "removed",
+  "before": "demo-removed-before.png",
+  "after": "demo-removed-after.png"
+ },
+ {
+  "id": "demo-moved",
+  "label": "合成 · 红点移位",
+  "note": "红点从第一个会话移到第三个会话。",
+  "expect": "moved",
+  "before": "demo-moved-before.png",
+  "after": "demo-moved-after.png"
+ },
+ {
+  "id": "demo-none",
+  "label": "合成 · 无变化",
+  "note": "两张图完全相同，用来观察方法会不会误报。",
+  "expect": "none",
+  "before": "demo-none-before.png",
+  "after": "demo-none-after.png"
+ }
+]

@@ -176,20 +176,33 @@ class Handler(BaseHTTPRequestHandler):
 
     # ---------------------------------------------------------------- 杂项
     def _samples(self) -> list[dict[str, Any]]:
-        meta_path = SAMPLES / "samples.json"
-        if not meta_path.is_file():
-            return []
-        try:
-            data = json.loads(meta_path.read_text(encoding="utf-8"))
-        except (OSError, ValueError):
-            return []
-        out = []
-        for item in data:
-            if not isinstance(item, dict):
+        """读示例清单：`samples.json`（本地真实图）+ `samples.demo.json`（仓库自带合成图）。
+
+        两份都读，按 id 去重；本地文件优先。合成示例不含任何真实截图。
+        """
+        out: list[dict[str, Any]] = []
+        seen: set[str] = set()
+        for meta_name in ("samples.json", "samples.demo.json"):
+            meta_path = SAMPLES / meta_name
+            if not meta_path.is_file():
                 continue
-            before = SAMPLES / str(item.get("before", ""))
-            after = SAMPLES / str(item.get("after", ""))
-            if before.is_file() and after.is_file():
+            try:
+                data = json.loads(meta_path.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                continue
+            if not isinstance(data, list):
+                continue
+            for item in data:
+                if not isinstance(item, dict):
+                    continue
+                sid = str(item.get("id") or "")
+                if sid and sid in seen:
+                    continue
+                before = SAMPLES / str(item.get("before", ""))
+                after = SAMPLES / str(item.get("after", ""))
+                if not (before.is_file() and after.is_file()):
+                    continue
+                seen.add(sid)
                 out.append(
                     {
                         "id": item.get("id"),

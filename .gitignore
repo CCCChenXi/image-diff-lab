@@ -13,3 +13,6 @@ models/*.pt
 # 真实截图、示例图里的联系人和头像属于个人数据，默认不提交
 web/samples/*.png
 web/samples/samples.json
+# 仓库自带的合成示例（tools/make_demo.py 生成，不含真实数据）
+!web/samples/demo-*.png
+!web/samples/samples.demo.json

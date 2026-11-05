@@ -5,6 +5,10 @@
 场景就是截图里的问题：第一张联系人旁边有红点，第二张红点消失——程序要判断
 **是新增、消失、位置变化，还是没变**；同时观察七种方法各自“看得见什么、看不见什么、要花多久”。
 
+![演示](docs/images/demo.gif)
+
+> 演示和内置合成示例都是 `tools/make_demo.py` 画的假界面，不含任何真实截图。
+
 > 与 `yolo-lab` 一样：**前端零构建、单用户、只监听 127.0.0.1**。
 > 图像能力可以直接复用已有的 Python 环境，也可以按下面的通用方式新建环境。
 >
@@ -77,11 +81,18 @@ python server.py --weights models/wechat-ui-best.pt
 
 自己训练、数据格式、类别约定、许可证和排错，见 [`docs/yolo-byom.md`](docs/yolo-byom.md)。
 
-内置示例图对是由 `tools/make_samples.py` 从本机真实截图生成的红点新增 / 消失 / 移位 / 无变化四组。
-**这些截图属于个人数据，`.gitignore` 默认不提交 `web/samples/*.png`**；公开仓库请改用合成的假界面示例：
+内置示例分两种，互不覆盖：
+
+- **合成示例（随仓库提供）**：`tools/make_demo.py` 画的假界面，生成
+  `web/samples/demo-*.png` 和 `web/samples/samples.demo.json`，不含真实数据；
+- **本地真实示例（可选）**：`tools/make_samples.py` 从本机微信截图生成红点四组，
+  属于个人数据，`.gitignore` 默认不提交 `web/samples/*.png` 和 `samples.json`。
+
+公开仓库只有合成示例；本地跑过 `make_samples.py` 的话，两套示例会同时出现在页面上。
 
 ```powershell
-python tools\make_samples.py --force
+# 重新生成合成示例（公开演示用）
+python tools\make_demo.py --force
 ```
 
 ---
@@ -298,8 +309,8 @@ Invoke-RestMethod -Uri http://127.0.0.1:8791/api/compare -Method Post -ContentTy
 ## 验证
 
 ```powershell
-# 先生成示例图对（本地真实截图；公开仓库请用合成图）
-python tools\make_samples.py --force
+# 先生成合成示例（公开演示用；本地真实示例用 make_samples.py）
+python tools\make_demo.py --force
 
 # 端到端冒烟：4 个示例对 × 7 个方法，断言结构、判定、切面耗时
 python tools\selftest.py
