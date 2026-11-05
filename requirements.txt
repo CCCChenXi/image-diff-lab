@@ -1,0 +1,4 @@
+# 核心依赖：不包含 OCR 和 YOLO 的重型可选依赖
+opencv-python>=4.10,<5
+numpy>=2.0,<3
+pillow>=10.0,<13

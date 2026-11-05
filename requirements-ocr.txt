@@ -1,0 +1,5 @@
+-r requirements.txt
+
+# OCR 方法可选；PaddleOCR 首次运行会下载模型
+paddleocr>=3.7,<4
+paddlepaddle>=3.3,<4

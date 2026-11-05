@@ -1,0 +1,5 @@
+-r requirements.txt
+
+# ⚠️ Ultralytics 是 AGPL-3.0，仅在使用 YOLO 方法时需要安装。
+# 本项目不附带训练权重；请按 docs/yolo-byom.md 自行训练/提供 best.pt。
+ultralytics>=8.4,<9

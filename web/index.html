@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>图像变化检测实验台 · Image Diff Lab</title>
+  <link rel="stylesheet" href="/web/app.css">
+</head>
+<body>
+  <div class="page-glow" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <a class="brand" href="/">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" fill="none">
+          <rect x="3" y="7" width="12" height="18" rx="3" stroke="currentColor" stroke-width="1.8"/>
+          <rect x="17" y="7" width="12" height="18" rx="3" stroke="currentColor" stroke-width="1.8" stroke-dasharray="3 3"/>
+          <circle cx="22.5" cy="12.5" r="2.5" fill="currentColor"/>
+        </svg>
+      </span>
+      <span class="brand-copy">
+        <strong>图像变化检测实验台</strong>
+        <small>OpenCV · HSV · SSIM · OCR · YOLO · 指纹 · ORB</small>
+      </span>
+    </a>
+    <div class="topbar-right">
+      <span id="engine-status" class="status-pill"><span class="dot"></span><span class="label">连接服务…</span></span>
+      <span class="status-pill ghost" title="每个 detect 方法都被 around 切面包裹">AOP 计时</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">EXPERIMENT 01 / IMAGE DIFF</p>
+        <h1>两张截图，七种<br><em>变化检测</em>方法</h1>
+        <p class="lead">
+          上传“红点出现前 / 后”的两张微信截图，一个接口依次调用七种方法。
+          每个方法输出统一的判定与证据，耗时由 AOP 切面在函数进入、返回处实测。
+        </p>
+        <div class="hero-tags">
+          <span>单接口</span><span>7 个实现类</span><span>统一输出契约</span><span>@Around 计时</span>
+        </div>
+      </div>
+      <div class="hero-stats" aria-hidden="true">
+        <div class="stat"><strong>7</strong><span>检测方法</span></div>
+        <div class="stat"><strong>1</strong><span>统一接口</span></div>
+        <div class="stat"><strong>ms</strong><span>切面计时</span></div>
+      </div>
+    </section>
+
+    <section class="panel input-panel" id="input-panel">
+      <div class="panel-head">
+        <div>
+          <p class="step">01 / INPUT</p>
+          <h2>选择两张截图</h2>
+          <p class="sub">拖拽、点击选择，或直接 <kbd>Ctrl</kbd> + <kbd>V</kbd> 粘贴。单张不超过 12MB。</p>
+        </div>
+        <div class="samples" id="samples" hidden>
+          <span class="samples-label">载入示例</span>
+        </div>
+      </div>
+
+      <div class="pair-grid">
+        <div class="dropzone" id="dz-before" data-side="before" tabindex="0" role="button" aria-label="选择第一张图">
+          <input type="file" id="file-before" accept="image/png,image/jpeg,image/webp,image/bmp" hidden>
+          <span class="dz-tag">BEFORE · 基准</span>
+          <div class="dz-empty">
+            <span class="dz-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </span>
+            <strong>第一张图</strong>
+            <span>红点出现前，或任意基准截图</span>
+            <label class="ghost-btn pick-label" for="file-before">选择图片</label>
+          </div>
+          <div class="dz-preview" hidden>
+            <img id="preview-before" alt="第一张图预览">
+            <div class="dz-meta">
+              <div class="dz-file"><strong id="name-before"></strong><span id="meta-before"></span></div>
+              <div class="dz-actions">
+                <button type="button" class="mini-btn" data-action="pick">换一张</button>
+                <button type="button" class="mini-btn danger" data-action="clear">移除</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pair-arrow" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14m0 0-5-5m5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>对比</span>
+        </div>
+
+        <div class="dropzone" id="dz-after" data-side="after" tabindex="0" role="button" aria-label="选择第二张图">
+          <input type="file" id="file-after" accept="image/png,image/jpeg,image/webp,image/bmp" hidden>
+          <span class="dz-tag">AFTER · 变化后</span>
+          <div class="dz-empty">
+            <span class="dz-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </span>
+            <strong>第二张图</strong>
+            <span>红点消失 / 新增 / 移位后的截图</span>
+            <label class="ghost-btn pick-label" for="file-after">选择图片</label>
+          </div>
+          <div class="dz-preview" hidden>
+            <img id="preview-after" alt="第二张图预览">
+            <div class="dz-meta">
+              <div class="dz-file"><strong id="name-after"></strong><span id="meta-after"></span></div>
+              <div class="dz-actions">
+                <button type="button" class="mini-btn" data-action="pick">换一张</button>
+                <button type="button" class="mini-btn danger" data-action="clear">移除</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="method-bar">
+        <div class="method-pick" id="method-pick" role="group" aria-label="选择检测方法"></div>
+        <div class="run-wrap">
+          <button id="run" class="primary" disabled>
+            <span class="btn-label">开始分析</span>
+            <span class="kbd-hint"><kbd>Ctrl</kbd><kbd>↵</kbd></span>
+          </button>
+          <button id="reset" class="ghost-btn" hidden>清空</button>
+        </div>
+      </div>
+      <p class="input-foot">两张图尺寸不一致时，后图会自动缩放到前图尺寸；返回的坐标都基于对齐后的画布。</p>
+    </section>
+
+    <section id="loading" class="panel loading" hidden>
+      <div class="spinner" aria-hidden="true"></div>
+      <div class="loading-copy">
+        <strong>正在分析…</strong>
+        <p id="loading-hint">解码图片并对齐尺寸</p>
+      </div>
+      <div class="loading-timer" id="loading-timer">0.0s</div>
+    </section>
+
+    <section id="results" hidden>
+      <div class="result-head">
+        <div>
+          <p class="step">02 / RESULT</p>
+          <h2>分析结果</h2>
+          <p class="sub" id="result-sub"></p>
+        </div>
+        <div class="result-actions">
+          <button id="export" class="ghost-btn">导出 JSON</button>
+        </div>
+      </div>
+
+      <div class="summary-grid">
+        <div class="panel verdict" id="verdict"></div>
+        <div class="panel timing-panel">
+          <div class="panel-mini-head">
+            <h3>AOP 实测耗时</h3>
+            <span id="total-ms" class="mono"></span>
+          </div>
+          <div id="timing-bars" class="timing-bars"></div>
+          <p class="timing-note" id="timing-note"></p>
+        </div>
+      </div>
+
+      <div class="section-label">
+        <h3>各方法输出</h3>
+        <p>统一结构：<code>hasChange</code> · <code>changeType</code> · <code>confidence</code> · <code>regions[]</code> · <code>elapsedMs</code>　（置信度 ≠ 准确率）</p>
+      </div>
+      <div class="cards" id="cards"></div>
+
+      <details class="panel aspect-panel" open>
+        <summary>
+          <span class="summary-title"><span class="step">03</span> AOP 切面日志</span>
+          <span id="aspect-meta" class="aspect-meta mono"></span>
+        </summary>
+        <div class="aspect-intro">
+          <p>切面按 <code id="pointcut">execution(*.detect(..))</code> 扫描实现类，在
+            <code>perf_counter_ns()</code> 进入 / 退出时打点；服务入口
+            <code>CompareService.compare</code> 也套同一层 around，异常同样记录。</p>
+          <span id="trace-id" class="trace-id mono"></span>
+        </div>
+        <div id="aspect-log" class="aspect-log"></div>
+      </details>
+    </section>
+  </main>
+
+  <footer>
+    <span>Image Diff Lab · 单用户本地实验台</span>
+    <span class="mono">127.0.0.1 · 无鉴权 · 不要暴露公网</span>
+  </footer>
+
+  <div id="lightbox" class="lightbox" hidden>
+    <button class="lightbox-close" type="button" aria-label="关闭">×</button>
+    <figure>
+      <img id="lightbox-img" alt="叠加层放大图">
+      <figcaption id="lightbox-cap"></figcaption>
+    </figure>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <noscript>这个实验台需要 JavaScript 才能上传图片并展示结果。</noscript>
+  <script src="/web/app.js" defer></script>
+</body>
+</html>

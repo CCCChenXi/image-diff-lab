@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.venv/
+logs/
+.env
+.paddlex/
+
+# YOLO 权重/导出模型：不要提交
+*.pt
+*.onnx
+models/*.pt
+
+# 真实截图、示例图里的联系人和头像属于个人数据，默认不提交
+web/samples/*.png
+web/samples/samples.json

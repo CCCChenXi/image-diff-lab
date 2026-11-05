@@ -1,0 +1,30 @@
+image-diff-lab
+Copyright (C) 2026 xige
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+---
+
+Third-party components (see also the dependency metadata):
+
+- OpenCV — Apache-2.0
+- NumPy — BSD-3-Clause
+- Pillow — HPND
+- PaddleOCR / PaddlePaddle — Apache-2.0
+- PyTorch / torchvision — BSD-3-Clause
+- Ultralytics (optional YOLO dependency) — AGPL-3.0
+- YOLO weights are NOT included in this repository; users must train or
+  provide their own weights and comply with the applicable licenses.
+
+The optional YOLO integration is documented in docs/yolo-byom.md.
